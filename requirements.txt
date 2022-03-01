@@ -105,7 +105,6 @@ rsa==4.6
 scikit-image==0.18.1
 scikit-learn==1.0.1
 scipy==1.5.2
-setuptools==49.6.0.post20200814
 six==1.15.0
 snowballstemmer==2.0.0
 Sphinx==3.2.1
