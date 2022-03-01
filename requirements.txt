@@ -1,7 +1,7 @@
 absl-py==0.9.0
 alabaster==0.7.12
 astor==0.8.1
-astroid==2.3.3
+astroid
 attrs==20.1.0
 Babel==2.8.0
 backcall==0.2.0
@@ -50,7 +50,7 @@ Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 keyring==21.4.0
 kiwisolver==1.2.0
-lazy-object-proxy==1.5.1
+lazy-object-proxy
 Markdown==3.2.2
 MarkupSafe==1.1.1
 matplotlib==3.3.1
