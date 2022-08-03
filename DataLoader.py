@@ -25,7 +25,7 @@ class DataLoader:
         self.csv_path = csv_path
         
     def get_loader(self,data_type,task_type):
-        allLoaders = {'tissue_signature_mat':{'segmentation':self.load_data_mat_seg}, 'train_labels_mat':{'segmentation':self.load_data_mat_seg2},'classification3D_mat':{'classification':self.load_mat_classification3D},'image_synthesis_mat':{'synthesis':self.load_data_mat_image_synthesis},'dicom_folder':{'classification':self.load_folderwise_classifications}}
+        allLoaders = {'tissue_signature_mat':{'segmentation':self.load_data_mat_seg}, 'train_labels_mat':{'segmentation':self.load_data_mat_seg2},'classification3D_mat':{'classification':self.load_mat_classification3D},'classification3D_dicom':{'classification':self.load_dicom_classification3D},'image_synthesis_mat':{'synthesis':self.load_data_mat_image_synthesis},'dicom_folder':{'classification':self.load_folderwise_classifications}}
         return allLoaders[data_type][task_type]
     
     def load_data_mat_seg(self,batch_size=1):
@@ -88,6 +88,42 @@ class DataLoader:
             
             yield imgs, AllLabels, batch
     
+    def load_dicom_classification3D(self,batch_size=1):
+        '''
+        This will load classification data. The folder should contain the following
+
+        1. CSV file (name should be classificationData.csv) with the following column headings
+            img: name of the image dicom file
+            class: corresponding classification label
+        '''
+        # Read the csv file
+        df = pd.read_csv(self.path + '/classificationData.csv')
+        # Get all the images and class labels
+        allImgs = df['patientId']
+        allLabels = df['Sex']
+        
+        # Create a shuffled index for training
+        ixImgs = np.arange(len(allImgs))        
+        np.random.shuffle(ixImgs)
+        
+        # Randomly shuffle all the files        
+        n_batches = int(len(ixImgs)/batch_size)
+        self.n_batches = n_batches
+        for i in range(n_batches):
+            ind = ixImgs[i*batch_size:(i+1)*batch_size]
+            batch = allImgs[ind]
+            classLabels = allLabels[ind]
+            imgs = []
+            for batchFile in batch:
+                img,imSize = self.read_classification_dicom(self.path + '/' + batchFile) # Decide what to load                
+                img = np.expand_dims(img,-1)
+                imgs.append(img)                                
+                    
+            imgs = np.array(imgs)
+            AllLabels = np.array(classLabels)
+
+            yield imgs, AllLabels, batch
+            
     def load_mat_classification3D(self,batch_size=1):
         '''
         This will load classification data. The folder should contain the following
@@ -255,6 +291,17 @@ class DataLoader:
         img = np.array(readmat.get('img'))  
         #print(img.shape)
         img = (img-np.min(img))/(np.max(img)-np.min(img))
+        imSize = np.shape(img)
+        
+        return img,imSize
+    
+    def read_classification_dicom(self, path):
+        
+        dataset = pydicom.dcmread(path)
+        img = np.array(dataset.pixel_array)
+         
+        img = (img-np.min(img))/(np.max(img)-np.min(img))
+        img = cv2.resize(img, dsize=(256,256))
         imSize = np.shape(img)
         
         return img,imSize
