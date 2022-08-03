@@ -297,7 +297,7 @@ class DataLoader:
     
     def read_classification_dicom(self, path):
         
-        dataset = pydicom.dcmread(os.path.join(path,'.dcm'))
+        dataset = pydicom.dcmread(os.path.join(path+'.dcm'))
         img = np.array(dataset.pixel_array)
          
         img = (img-np.min(img))/(np.max(img)-np.min(img))
